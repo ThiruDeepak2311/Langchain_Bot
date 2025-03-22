@@ -1,0 +1,699 @@
+{% extends "base.html" %}
+
+{% block title %}Intelligent Chatbot - Chat{% endblock %}
+
+{% block head %}
+<style>
+    /* Chat container animation */
+    @keyframes fadeIn {
+        from { opacity: 0; transform: translateY(20px); }
+        to { opacity: 1; transform: translateY(0); }
+    }
+    
+    .message-appear {
+        animation: fadeIn 0.3s ease-out forwards;
+    }
+    
+    /* Typing indicator animation */
+    @keyframes typing {
+        0% { transform: translateY(0px); }
+        28% { transform: translateY(-5px); }
+        44% { transform: translateY(0px); }
+    }
+    
+    .typing-dot {
+        animation: typing 1.5s infinite;
+    }
+    
+    .typing-dot:nth-child(1) { animation-delay: 0s; }
+    .typing-dot:nth-child(2) { animation-delay: 0.2s; }
+    .typing-dot:nth-child(3) { animation-delay: 0.4s; }
+    
+    /* Code block styling */
+    pre {
+        position: relative;
+        background-color: #1a1a1a;
+        border-radius: 0.375rem;
+        padding: 1rem;
+        margin: 1rem 0;
+        overflow-x: auto;
+    }
+    
+    pre code {
+        color: #f8f8f8;
+        font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+        font-size: 0.875rem;
+        line-height: 1.5;
+    }
+    
+    .copy-button {
+        position: absolute;
+        top: 0.5rem;
+        right: 0.5rem;
+        background-color: #4a4a4a;
+        color: white;
+        border: none;
+        border-radius: 0.25rem;
+        padding: 0.25rem 0.5rem;
+        font-size: 0.75rem;
+        cursor: pointer;
+        transition: background-color 0.2s;
+    }
+    
+    .copy-button:hover {
+        background-color: #666;
+    }
+    
+    /* Message styling */
+    .message-container {
+        margin-bottom: 1rem;
+    }
+    
+    .user-message {
+        background-color: #e0f2fe;
+        border-radius: 0.75rem 0.75rem 0 0.75rem;
+    }
+    
+    .assistant-message {
+        background-color: #f3f4f6;
+        border-radius: 0.75rem 0.75rem 0.75rem 0;
+    }
+    
+    .system-message {
+        background-color: #fee2e2;
+        border-radius: 0.75rem;
+        text-align: center;
+        padding: 0.5rem 1rem;
+        margin: 0.5rem auto;
+        max-width: 80%;
+    }
+    
+    /* Controls styling */
+    .controls {
+        display: flex;
+        justify-content: space-between;
+        padding: 0.5rem;
+        border-top: 1px solid #e5e7eb;
+    }
+    
+    .menu-button {
+        background: none;
+        border: none;
+        color: #6b7280;
+        cursor: pointer;
+        padding: 0.25rem 0.5rem;
+        border-radius: 0.25rem;
+        transition: background-color 0.2s;
+    }
+    
+    .menu-button:hover {
+        background-color: #f3f4f6;
+        color: #4b5563;
+    }
+    
+    .dropdown-menu {
+        position: absolute;
+        bottom: 4rem;
+        right: 1rem;
+        background-color: white;
+        border-radius: 0.375rem;
+        box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+        z-index: 50;
+        overflow: hidden;
+        display: none;
+    }
+    
+    .dropdown-menu.active {
+        display: block;
+    }
+    
+    .dropdown-item {
+        display: block;
+        padding: 0.5rem 1rem;
+        color: #4b5563;
+        text-decoration: none;
+        transition: background-color 0.2s;
+        cursor: pointer;
+    }
+    
+    .dropdown-item:hover {
+        background-color: #f3f4f6;
+    }
+    
+    /* Response time indicator */
+    .response-time {
+        font-size: 0.7rem;
+        color: #6b7280;
+        margin-top: 0.25rem;
+        text-align: right;
+    }
+    
+    /* Mobile responsiveness */
+    @media (max-width: 640px) {
+        .chat-container {
+            height: calc(100vh - 8rem);
+        }
+        
+        .message-content {
+            max-width: 85%;
+        }
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="max-w-5xl mx-auto flex flex-col h-[calc(100vh-12rem)] chat-container">
+    <div class="bg-white rounded-lg shadow-md p-4 flex flex-col h-full relative">
+        <!-- Chat Header -->
+        <div class="border-b pb-4 mb-4 flex items-center justify-between">
+            <div>
+                <h1 class="text-2xl font-bold text-gray-800">Intelligent Chatbot</h1>
+                <p class="text-gray-600">Ask me anything - I can search Wikipedia and knowledge sources to help answer your questions!</p>
+            </div>
+            <button id="clear-chat" class="bg-red-100 hover:bg-red-200 text-red-800 px-3 py-1 rounded text-sm transition">
+                <i class="fas fa-trash-alt mr-1"></i> Clear Chat
+            </button>
+        </div>
+        
+        <!-- Chat Messages Container -->
+        <div id="chat-messages" class="flex-grow overflow-y-auto space-y-4 mb-4 p-2">
+            <!-- Welcome Message -->
+            <div class="flex items-start message-appear message-container">
+                <div class="flex-shrink-0 mr-3">
+                    <div class="w-9 h-9 rounded-full bg-indigo-500 flex items-center justify-center text-white">
+                        <i class="fas fa-robot"></i>
+                    </div>
+                </div>
+                <div class="assistant-message p-4 message-content">
+                    <p class="text-gray-800">
+                        Hello! I'm your intelligent chatbot assistant. I can help answer questions using information from Wikipedia and my knowledge base. What would you like to know about?
+                    </p>
+                </div>
+            </div>
+            <!-- Messages will be added here dynamically -->
+        </div>
+        
+        <!-- Typing Indicator (Hidden by default) -->
+        <div id="typing-indicator" class="flex items-start mb-4 hidden">
+            <div class="flex-shrink-0 mr-3">
+                <div class="w-9 h-9 rounded-full bg-indigo-500 flex items-center justify-center text-white">
+                    <i class="fas fa-robot"></i>
+                </div>
+            </div>
+            <div class="bg-gray-200 rounded-lg p-4 px-6 flex items-center">
+                <div class="flex space-x-1">
+                    <div class="typing-dot w-2 h-2 bg-gray-600 rounded-full"></div>
+                    <div class="typing-dot w-2 h-2 bg-gray-600 rounded-full"></div>
+                    <div class="typing-dot w-2 h-2 bg-gray-600 rounded-full"></div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Chat Controls -->
+        <div class="controls relative">
+            <button id="menu-button" class="menu-button">
+                <i class="fas fa-ellipsis-v"></i>
+            </button>
+            
+            <div id="dropdown-menu" class="dropdown-menu">
+                <a href="#" class="dropdown-item" id="export-chat">
+                    <i class="fas fa-file-export mr-2"></i> Export Chat
+                </a>
+                <a href="#" class="dropdown-item" id="toggle-audio">
+                    <i class="fas fa-volume-up mr-2"></i> <span id="audio-text">Enable Audio</span>
+                </a>
+            </div>
+        </div>
+        
+        <!-- Chat Input -->
+        <form id="chat-form" class="mt-auto flex">
+            <input 
+                type="text" 
+                id="message-input" 
+                class="flex-grow rounded-l-md border border-gray-300 px-4 py-2 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
+                placeholder="Type your message here..."
+                autocomplete="off"
+            />
+            <button 
+                type="submit" 
+                class="bg-indigo-600 text-white px-4 py-2 rounded-r-md hover:bg-indigo-700 transition"
+            >
+                <i class="fas fa-paper-plane"></i>
+            </button>
+        </form>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+    // Generate a client ID
+    const storedClientId = localStorage.getItem('chatClientId');
+    const clientId = storedClientId || 'user_' + Math.random().toString(36).substring(2, 10);
+    
+    // Store client ID for session persistence
+    if (!storedClientId) {
+        localStorage.setItem('chatClientId', clientId);
+    }
+    
+    // Connect to WebSocket
+    let socket = null;
+    let isConnected = false;
+    let reconnectAttempts = 0;
+    const maxReconnectAttempts = 5;
+    
+    // DOM elements
+    const chatMessages = document.getElementById('chat-messages');
+    const chatForm = document.getElementById('chat-form');
+    const messageInput = document.getElementById('message-input');
+    const typingIndicator = document.getElementById('typing-indicator');
+    const clearChatButton = document.getElementById('clear-chat');
+    const menuButton = document.getElementById('menu-button');
+    const dropdownMenu = document.getElementById('dropdown-menu');
+    const exportChatButton = document.getElementById('export-chat');
+    const toggleAudioButton = document.getElementById('toggle-audio');
+    const audioText = document.getElementById('audio-text');
+    
+    // Audio settings
+    let audioEnabled = localStorage.getItem('audioEnabled') === 'true';
+    updateAudioToggle();
+    
+    // Speech synthesis instance
+    let speechSynthesis = window.speechSynthesis;
+    let currentUtterance = null;
+    
+    // Connect to WebSocket
+    function connectWebSocket() {
+        socket = new WebSocket(`${window.location.protocol === 'https:' ? 'wss:' : 'ws:'}//${window.location.host}/ws/${clientId}`);
+        
+        // Connect event
+        socket.onopen = (event) => {
+            console.log('WebSocket connected');
+            isConnected = true;
+            reconnectAttempts = 0;
+            
+            // Remove any connection error messages
+            const errorElem = document.getElementById('connection-error');
+            if (errorElem) {
+                errorElem.remove();
+            }
+        };
+        
+        // Message received event
+        socket.onmessage = (event) => {
+            try {
+                const data = JSON.parse(event.data);
+                
+                // Handle different message types
+                if (data.type === 'typing') {
+                    typingIndicator.style.display = data.status ? 'flex' : 'none';
+                    
+                    // Scroll to show typing indicator when it appears
+                    if (data.status) {
+                        scrollToBottom();
+                    }
+                } else if (data.type === 'message') {
+                    // Hide typing indicator
+                    typingIndicator.style.display = 'none';
+                    
+                    // Add message to chat
+                    addMessage(data.content, 'assistant', false, data.metadata);
+                    
+                    // Text-to-speech if enabled
+                    if (audioEnabled) {
+                        speakText(data.content);
+                    }
+                    
+                    // Scroll to bottom
+                    scrollToBottom();
+                } else if (data.type === 'error') {
+                    console.error('Error:', data.message);
+                    
+                    // Hide typing indicator
+                    typingIndicator.style.display = 'none';
+                    
+                    // Add error message
+                    addSystemMessage(data.message);
+                    
+                    // Scroll to bottom
+                    scrollToBottom();
+                } else if (data.type === 'system') {
+                    // Handle system messages
+                    addSystemMessage(data.message);
+                    scrollToBottom();
+                }
+            } catch (error) {
+                console.error('Error parsing message:', error);
+            }
+        };
+        
+        // Connection closed event
+        socket.onclose = (event) => {
+            console.log('WebSocket disconnected');
+            isConnected = false;
+            
+            // Try to reconnect
+            if (reconnectAttempts < maxReconnectAttempts) {
+                reconnectAttempts++;
+                const delay = Math.min(1000 * Math.pow(2, reconnectAttempts), 10000);
+                
+                addSystemMessage(`Connection lost. Reconnecting in ${delay/1000} seconds...`);
+                scrollToBottom();
+                
+                setTimeout(connectWebSocket, delay);
+            } else {
+                // Max reconnect attempts reached
+                addSystemMessage('Connection lost. Please refresh the page to reconnect.');
+                
+                // Disable input
+                messageInput.disabled = true;
+            }
+        };
+        
+        // Connection error event
+        socket.onerror = (error) => {
+            console.error('WebSocket error:', error);
+        };
+    }
+    
+    // Initialize connection on page load
+    connectWebSocket();
+    
+    // Form submit event
+    chatForm.addEventListener('submit', (event) => {
+        event.preventDefault();
+        
+        const message = messageInput.value.trim();
+        if (!message) return;
+        
+        // Check if websocket is connected
+        if (!isConnected) {
+            addSystemMessage('Not connected to server. Please wait for reconnection or refresh the page.');
+            return;
+        }
+        
+        // Add message to chat
+        addMessage(message, 'user');
+        
+        // Send message to server
+        socket.send(JSON.stringify({
+            type: 'message',
+            content: message
+        }));
+        
+        // Clear input
+        messageInput.value = '';
+        
+        // Focus input
+        messageInput.focus();
+        
+        // Scroll to bottom
+        scrollToBottom();
+    });
+    
+    // Clear chat button event
+    clearChatButton.addEventListener('click', () => {
+        if (confirm('Are you sure you want to clear the chat history?')) {
+            // Clear local chat display
+            chatMessages.innerHTML = '';
+            
+            // Add welcome message back
+            addMessage(
+                'Hello! I\'m your intelligent chatbot assistant. I can help answer questions using information from Wikipedia and my knowledge base. What would you like to know about?',
+                'assistant'
+            );
+            
+            // Send clear history command to server
+            if (isConnected) {
+                socket.send(JSON.stringify({
+                    type: 'clear_history'
+                }));
+            }
+            
+            // Focus input
+            messageInput.focus();
+        }
+    });
+    
+    // Menu button event
+    menuButton.addEventListener('click', () => {
+        dropdownMenu.classList.toggle('active');
+    });
+    
+    // Close dropdown when clicking outside
+    document.addEventListener('click', (event) => {
+        if (!menuButton.contains(event.target) && !dropdownMenu.contains(event.target)) {
+            dropdownMenu.classList.remove('active');
+        }
+    });
+    
+    // Export chat event
+    exportChatButton.addEventListener('click', (event) => {
+        event.preventDefault();
+        exportChat();
+        dropdownMenu.classList.remove('active');
+    });
+    
+    // Toggle audio event
+    toggleAudioButton.addEventListener('click', (event) => {
+        event.preventDefault();
+        audioEnabled = !audioEnabled;
+        localStorage.setItem('audioEnabled', audioEnabled);
+        updateAudioToggle();
+        
+        // Notify the user
+        addSystemMessage(audioEnabled ? 'Text-to-speech enabled' : 'Text-to-speech disabled');
+        scrollToBottom();
+        
+        // Close dropdown
+        dropdownMenu.classList.remove('active');
+    });
+    
+    // Update audio toggle button text
+    function updateAudioToggle() {
+        if (audioEnabled) {
+            audioText.textContent = 'Disable Audio';
+            toggleAudioButton.querySelector('i').className = 'fas fa-volume-up mr-2';
+        } else {
+            audioText.textContent = 'Enable Audio';
+            toggleAudioButton.querySelector('i').className = 'fas fa-volume-mute mr-2';
+        }
+    }
+    
+    // Add a message to the chat
+    function addMessage(content, role, isError = false, metadata = null) {
+        const messageDiv = document.createElement('div');
+        messageDiv.classList.add('flex', 'items-start', 'message-appear', 'message-container');
+        
+        let icon, messageClass;
+        
+        if (role === 'user') {
+            icon = 'fa-user';
+            messageClass = 'user-message';
+            
+            messageDiv.innerHTML = `
+                <div class="flex-shrink-0 ml-3 order-2">
+                    <div class="w-9 h-9 rounded-full bg-blue-500 flex items-center justify-center text-white">
+                        <i class="fas ${icon}"></i>
+                    </div>
+                </div>
+                <div class="${messageClass} p-4 message-content order-1">
+                    <p class="text-gray-800">${formatMessage(content)}</p>
+                </div>
+            `;
+            
+            messageDiv.classList.add('flex-row-reverse');
+        } else if (role === 'assistant') {
+            icon = 'fa-robot';
+            messageClass = isError ? 'bg-red-100' : 'assistant-message';
+            
+            let metadataHtml = '';
+            if (metadata && metadata.response_time) {
+                metadataHtml = `<div class="response-time">Response time: ${metadata.response_time}s</div>`;
+            }
+            
+            messageDiv.innerHTML = `
+                <div class="flex-shrink-0 mr-3">
+                    <div class="w-9 h-9 rounded-full bg-indigo-500 flex items-center justify-center text-white">
+                        <i class="fas ${icon}"></i>
+                    </div>
+                </div>
+                <div class="${messageClass} p-4 message-content">
+                    <div class="text-gray-800">${formatMessage(content)}</div>
+                    ${metadataHtml}
+                </div>
+            `;
+        }
+        
+        chatMessages.appendChild(messageDiv);
+        
+        // Add copy buttons to code blocks
+        addCopyButtonsToCodeBlocks();
+    }
+    
+    // Add a system message to the chat
+    function addSystemMessage(message) {
+        const messageDiv = document.createElement('div');
+        messageDiv.classList.add('message-appear', 'system-message');
+        messageDiv.innerHTML = `
+            <i class="fas fa-info-circle mr-2"></i>${message}
+        `;
+        chatMessages.appendChild(messageDiv);
+    }
+    
+    // Format message text with Markdown-like features
+    function formatMessage(text) {
+        // Escape HTML
+        text = text.replace(/</g, '&lt;').replace(/>/g, '&gt;');
+        
+        // Format code blocks (triple backticks)
+        text = text.replace(/```([^`]*?)```/gs, function(match, p1) {
+            // Try to extract language if specified on the first line
+            let code = p1.trim();
+            let language = '';
+            
+            // Check if first line contains language specification
+            const firstLineMatch = code.match(/^([a-zA-Z0-9_+-]+)[\r\n]/);
+            if (firstLineMatch) {
+                language = firstLineMatch[1].toLowerCase();
+                code = code.substring(firstLineMatch[0].length);
+            }
+            
+            return `<pre><code class="language-${language}">${code}</code></pre>`;
+        });
+        
+        // Format inline code
+        text = text.replace(/`([^`]+)`/g, '<code class="bg-gray-200 text-gray-800 px-1 py-0.5 rounded">$1</code>');
+        
+        // Format bold text
+        text = text.replace(/\*\*([^*]+)\*\*/g, '<strong>$1</strong>');
+        
+        // Format italic text
+        text = text.replace(/\*([^*]+)\*/g, '<em>$1</em>');
+        
+        // Format links
+        text = text.replace(/\[([^\]]+)\]\(([^)]+)\)/g, '<a href="$2" target="_blank" class="text-blue-600 hover:underline">$1</a>');
+        
+        // Replace newlines with <br>
+        text = text.replace(/\n/g, '<br>');
+        
+        return text;
+    }
+    
+    // Add copy buttons to all code blocks
+    function addCopyButtonsToCodeBlocks() {
+        const codeBlocks = document.querySelectorAll('pre');
+        
+        codeBlocks.forEach(pre => {
+            // Skip if already has a copy button
+            if (pre.querySelector('.copy-button')) return;
+            
+            const copyButton = document.createElement('button');
+            copyButton.className = 'copy-button';
+            copyButton.innerHTML = '<i class="fas fa-copy"></i>';
+            copyButton.title = 'Copy to clipboard';
+            
+            copyButton.addEventListener('click', () => {
+                const code = pre.querySelector('code').innerText;
+                navigator.clipboard.writeText(code).then(() => {
+                    copyButton.innerHTML = '<i class="fas fa-check"></i>';
+                    setTimeout(() => {
+                        copyButton.innerHTML = '<i class="fas fa-copy"></i>';
+                    }, 2000);
+                }).catch(err => {
+                    console.error('Could not copy text: ', err);
+                    copyButton.innerHTML = '<i class="fas fa-times"></i>';
+                    setTimeout(() => {
+                        copyButton.innerHTML = '<i class="fas fa-copy"></i>';
+                    }, 2000);
+                });
+            });
+            
+            pre.appendChild(copyButton);
+        });
+    }
+    
+    // Export chat history
+    function exportChat() {
+        // Get all messages
+        const messages = chatMessages.querySelectorAll('.message-container');
+        let exportText = "# Chat History\n\n";
+        
+        messages.forEach(message => {
+            if (message.classList.contains('flex-row-reverse')) {
+                exportText += "## You\n";
+            } else {
+                exportText += "## Chatbot\n";
+            }
+            
+            // Extract text content
+            const content = message.querySelector('.message-content');
+            if (content) {
+                // Convert HTML to plain text (simple version)
+                let text = content.innerText;
+                exportText += text + "\n\n";
+            }
+        });
+        
+        // Create file and download
+        const blob = new Blob([exportText], { type: 'text/plain' });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = `chat_export_${new Date().toISOString().slice(0, 10)}.txt`;
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+        URL.revokeObjectURL(url);
+    }
+    
+    // Text-to-speech function
+    function speakText(text) {
+        // Cancel any ongoing speech
+        if (speechSynthesis) {
+            speechSynthesis.cancel();
+            
+            // Clean text for speaking (remove markdown, code blocks, etc.)
+            const cleanText = text.replace(/```[\s\S]*?```/g, 'code block omitted')
+                                   .replace(/`([^`]+)`/g, '$1')
+                                   .replace(/\*\*([^*]+)\*\*/g, '$1')
+                                   .replace(/\*([^*]+)\*/g, '$1')
+                                   .replace(/\[([^\]]+)\]\(([^)]+)\)/g, '$1');
+            
+            // Create utterance
+            const utterance = new SpeechSynthesisUtterance(cleanText);
+            utterance.lang = 'en-US';
+            utterance.rate = 1.0;
+            utterance.pitch = 1.0;
+            currentUtterance = utterance;
+            
+            // Speak
+            speechSynthesis.speak(utterance);
+        }
+    }
+    
+    // Scroll to the bottom of the chat
+    function scrollToBottom() {
+        chatMessages.scrollTop = chatMessages.scrollHeight;
+    }
+    
+    // Focus input on page load
+    window.addEventListener('load', () => {
+        messageInput.focus();
+        scrollToBottom();
+    });
+    
+    // Handle keyboard shortcuts
+    document.addEventListener('keydown', (event) => {
+        // Ctrl/Cmd + Enter to submit form
+        if ((event.ctrlKey || event.metaKey) && event.key === 'Enter') {
+            chatForm.dispatchEvent(new Event('submit'));
+        }
+        
+        // Escape to close dropdown menu
+        if (event.key === 'Escape') {
+            dropdownMenu.classList.remove('active');
+        }
+    });
+</script>
+{% endblock %}

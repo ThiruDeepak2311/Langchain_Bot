@@ -1,0 +1,115 @@
+{% extends "base.html" %}
+
+{% block title %}Intelligent Chatbot - Home{% endblock %}
+
+{% block content %}
+<div class="max-w-5xl mx-auto">
+    <!-- Hero Section -->
+    <section class="py-12 px-4 sm:px-6 lg:px-8 bg-white rounded-lg shadow-md mb-12">
+        <div class="text-center">
+            <h1 class="text-4xl font-extrabold text-gray-900 sm:text-5xl sm:tracking-tight lg:text-6xl">
+                Welcome to Intelligent Chatbot
+            </h1>
+            <p class="mt-4 text-xl text-gray-500">
+                A personalized chatbot that can query data from Wikipedia and other sources to answer your questions
+            </p>
+            <div class="mt-8">
+                <a href="{{ url_for('chat_page') }}" class="inline-flex items-center px-6 py-3 border border-transparent text-base font-medium rounded-md shadow-sm text-white bg-indigo-600 hover:bg-indigo-700 transition">
+                    Start Chatting <i class="fas fa-arrow-right ml-2"></i>
+                </a>
+            </div>
+        </div>
+    </section>
+    
+    <!-- Features Section -->
+    <section class="py-8">
+        <h2 class="text-3xl font-bold text-center mb-12">Features</h2>
+        
+        <div class="grid md:grid-cols-3 gap-8">
+            <!-- Feature 1 -->
+            <div class="bg-white p-6 rounded-lg shadow-md">
+                <div class="text-indigo-500 mb-4">
+                    <i class="fas fa-robot text-4xl"></i>
+                </div>
+                <h3 class="text-xl font-semibold mb-2">Advanced AI</h3>
+                <p class="text-gray-600">
+                    Powered by state-of-the-art language models from Cohere for natural and intelligent conversations.
+                </p>
+            </div>
+            
+            <!-- Feature 2 -->
+            <div class="bg-white p-6 rounded-lg shadow-md">
+                <div class="text-indigo-500 mb-4">
+                    <i class="fas fa-book text-4xl"></i>
+                </div>
+                <h3 class="text-xl font-semibold mb-2">Knowledge Integration</h3>
+                <p class="text-gray-600">
+                    Retrieves information from Wikipedia to provide accurate and up-to-date answers.
+                </p>
+            </div>
+            
+            <!-- Feature 3 -->
+            <div class="bg-white p-6 rounded-lg shadow-md">
+                <div class="text-indigo-500 mb-4">
+                    <i class="fas fa-comment-dots text-4xl"></i>
+                </div>
+                <h3 class="text-xl font-semibold mb-2">Real-time Chat</h3>
+                <p class="text-gray-600">
+                    Enjoy seamless real-time conversations with WebSocket technology for instant responses.
+                </p>
+            </div>
+        </div>
+    </section>
+    
+    <!-- How It Works Section -->
+    <section class="py-8 mt-8">
+        <h2 class="text-3xl font-bold text-center mb-12">How It Works</h2>
+        
+        <div class="grid md:grid-cols-3 gap-8">
+            <!-- Step 1 -->
+            <div class="flex flex-col items-center">
+                <div class="bg-indigo-100 rounded-full w-16 h-16 flex items-center justify-center mb-4">
+                    <span class="text-indigo-600 font-bold text-xl">1</span>
+                </div>
+                <h3 class="text-xl font-semibold mb-2">Ask a Question</h3>
+                <p class="text-gray-600 text-center">
+                    Type your question or request in the chat interface.
+                </p>
+            </div>
+            
+            <!-- Step 2 -->
+            <div class="flex flex-col items-center">
+                <div class="bg-indigo-100 rounded-full w-16 h-16 flex items-center justify-center mb-4">
+                    <span class="text-indigo-600 font-bold text-xl">2</span>
+                </div>
+                <h3 class="text-xl font-semibold mb-2">Intelligent Processing</h3>
+                <p class="text-gray-600 text-center">
+                    Our system analyzes your request and retrieves relevant information.
+                </p>
+            </div>
+            
+            <!-- Step 3 -->
+            <div class="flex flex-col items-center">
+                <div class="bg-indigo-100 rounded-full w-16 h-16 flex items-center justify-center mb-4">
+                    <span class="text-indigo-600 font-bold text-xl">3</span>
+                </div>
+                <h3 class="text-xl font-semibold mb-2">Get Your Answer</h3>
+                <p class="text-gray-600 text-center">
+                    Receive a comprehensive and accurate response based on the latest information.
+                </p>
+            </div>
+        </div>
+    </section>
+    
+    <!-- Call to Action -->
+    <section class="py-12 mt-8 bg-indigo-50 rounded-lg text-center">
+        <h2 class="text-3xl font-bold mb-4">Ready to start?</h2>
+        <p class="text-gray-600 mb-8 max-w-2xl mx-auto">
+            Experience the power of our intelligent chatbot and get answers to your questions instantly.
+        </p>
+        <a href="{{ url_for('chat_page') }}" class="inline-flex items-center px-6 py-3 border border-transparent text-base font-medium rounded-md shadow-sm text-white bg-indigo-600 hover:bg-indigo-700 transition">
+            Try It Now <i class="fas fa-arrow-right ml-2"></i>
+        </a>
+    </section>
+</div>
+{% endblock %}

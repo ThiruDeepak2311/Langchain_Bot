@@ -1,0 +1,59 @@
+2025-03-22 12:25:06,762 - services.llm - ERROR - Error calling Cohere Chat API: BaseCohere.chat() got an unexpected keyword argument 'stream'
+2025-03-22 12:25:07,774 - services.llm - ERROR - Error calling Cohere Chat API: BaseCohere.chat() got an unexpected keyword argument 'stream'
+2025-03-22 12:25:09,773 - services.llm - ERROR - Error calling Cohere Chat API: BaseCohere.chat() got an unexpected keyword argument 'stream'
+2025-03-22 12:25:13,780 - services.llm - ERROR - Error calling Cohere Chat API: BaseCohere.chat() got an unexpected keyword argument 'stream'
+2025-03-22 12:25:21,759 - services.conversation - ERROR - Error generating response (attempt 1): 
+2025-03-22 12:25:23,758 - services.llm - ERROR - Error calling Cohere Chat API: BaseCohere.chat() got an unexpected keyword argument 'stream'
+2025-03-22 12:25:24,776 - services.llm - ERROR - Error calling Cohere Chat API: BaseCohere.chat() got an unexpected keyword argument 'stream'
+2025-03-22 12:25:26,761 - services.llm - ERROR - Error calling Cohere Chat API: BaseCohere.chat() got an unexpected keyword argument 'stream'
+2025-03-22 12:25:30,761 - services.llm - ERROR - Error calling Cohere Chat API: BaseCohere.chat() got an unexpected keyword argument 'stream'
+2025-03-22 12:25:38,757 - services.conversation - ERROR - Error generating response (attempt 2): 
+2025-03-22 12:25:42,779 - services.llm - ERROR - Error calling Cohere Chat API: BaseCohere.chat() got an unexpected keyword argument 'stream'
+2025-03-22 12:25:43,779 - services.llm - ERROR - Error calling Cohere Chat API: BaseCohere.chat() got an unexpected keyword argument 'stream'
+2025-03-22 12:25:45,774 - services.llm - ERROR - Error calling Cohere Chat API: BaseCohere.chat() got an unexpected keyword argument 'stream'
+2025-03-22 12:25:49,775 - services.llm - ERROR - Error calling Cohere Chat API: BaseCohere.chat() got an unexpected keyword argument 'stream'
+2025-03-22 12:25:57,771 - services.conversation - ERROR - Error generating response (attempt 3): 
+2025-03-22 12:25:57,771 - services.conversation - ERROR - All retries failed: 
+2025-03-22 12:25:57,926 - services.conversation - ERROR - Traceback (most recent call last):
+  File "C:\Users\Deepak Thirukkumaran\OneDrive\Documents\College\Projects\Langchain_bot\services\llm.py", line 342, in chat
+    response = await loop.run_in_executor(
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Deepak Thirukkumaran\AppData\Local\Programs\Python\Python312\Lib\concurrent\futures\thread.py", line 58, in run
+    result = self.fn(*self.args, **self.kwargs)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Deepak Thirukkumaran\OneDrive\Documents\College\Projects\Langchain_bot\services\llm.py", line 344, in <lambda>
+    lambda: self.client.chat(
+            ^^^^^^^^^^^^^^^^^
+  File "C:\Users\Deepak Thirukkumaran\OneDrive\Documents\College\Projects\Langchain_bot\venv\Lib\site-packages\cohere\client.py", line 103, in _wrapped
+    return func(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Deepak Thirukkumaran\OneDrive\Documents\College\Projects\Langchain_bot\venv\Lib\site-packages\cohere\client.py", line 35, in _wrapped
+    return method(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^
+TypeError: BaseCohere.chat() got an unexpected keyword argument 'stream'
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "C:\Users\Deepak Thirukkumaran\AppData\Local\Programs\Python\Python312\Lib\asyncio\tasks.py", line 520, in wait_for
+    return await fut
+           ^^^^^^^^^
+  File "C:\Users\Deepak Thirukkumaran\OneDrive\Documents\College\Projects\Langchain_bot\services\llm.py", line 384, in chat
+    await asyncio.sleep(backoff)
+  File "C:\Users\Deepak Thirukkumaran\AppData\Local\Programs\Python\Python312\Lib\asyncio\tasks.py", line 665, in sleep
+    return await future
+           ^^^^^^^^^^^^
+asyncio.exceptions.CancelledError
+
+The above exception was the direct cause of the following exception:
+
+Traceback (most recent call last):
+  File "C:\Users\Deepak Thirukkumaran\OneDrive\Documents\College\Projects\Langchain_bot\services\conversation.py", line 122, in process_message
+    response = await asyncio.wait_for(
+               ^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Deepak Thirukkumaran\AppData\Local\Programs\Python\Python312\Lib\asyncio\tasks.py", line 519, in wait_for
+    async with timeouts.timeout(timeout):
+  File "C:\Users\Deepak Thirukkumaran\AppData\Local\Programs\Python\Python312\Lib\asyncio\timeouts.py", line 115, in __aexit__
+    raise TimeoutError from exc_val
+TimeoutError
+
